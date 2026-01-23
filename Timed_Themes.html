@@ -1742,7 +1742,14 @@
     function dismissBirthdayPopup(){
         document.getElementById("birthdayPopup").style.display = "none";
     }
-   
+
+	
+	if ("serviceWorker" in navigator) {
+	  navigator.serviceWorker.register("./sw.js");
+	}
+	
+
+	
     renderCounts();
     renderBirthdays();
     renderTimetable();
