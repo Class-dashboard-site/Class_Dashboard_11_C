@@ -2,7 +2,7 @@ const CACHE_NAME = "class11c-offline-v2";
 
 const ASSETS = [
   "./",
-  "./Timed_Themes.html",
+  "./index.html",
   "./manifest.json",
 
   // backgrounds
@@ -42,3 +42,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
