@@ -1,7 +1,7 @@
 {
   "name": "Class 11 C Dashboard",
   "short_name": "Class 11C",
-  "start_url": "./Timed_Themes.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0d1b2a",
   "theme_color": "#0d1b2a",
@@ -18,3 +18,4 @@
     }
   ]
 }
+
