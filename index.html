@@ -1,0 +1,1923 @@
+
+<!-- This is an important Note. -->
+<!-- Code to update local storage of browser is given Below:-->
+<!-- localStorage.removeItem('classdash_v5'); -->
+<!-- Run it, & REFRESH THE TAB. -->
+<!-- Use wisely. -->
+
+<!doctype html>
+<html lang="en">
+<head>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d1b2a">
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Class Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&display=swap');
+
+    :root {
+    	--bg: #0d1b2a;
+    	--card: rgba(255, 255, 255, 0.10); /* 10% transparent white overlay */
+    	--accent-1: #4cc9f0;
+    	--accent-2: #4361ee;
+    	--muted: #f6f8f9;
+    	--glass-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    	font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', Arial;
+    }
+
+
+    html,body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #f5f5f5;
+        display: flex;
+        justify-content: center;
+    }
+
+  
+    header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:18px;text-align:center}
+
+    .wrap {
+      width: 1500px;        /* lock width */
+      max-width: 100%;      /* responsive on smaller screens */
+      margin: 0 auto;       /* center horizontally */
+      box-sizing: border-box;
+    }
+
+
+    .period {
+    	display: flex;
+    	flex-direction: column;
+    	padding: 10px;
+    	border-radius: 10px;
+    	border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .period-subject {
+    	font-weight: 600;
+    	color: rgba(255, 255, 255, 0.85); /* 10% lighter than box */
+    }
+
+    .period-sub {
+    	font-size: 13px;
+    	color: rgba(255, 255, 255, 0.65); /* teacher stays more muted */
+    	margin-top: 4px;
+    }
+
+    .period-num {
+    	font-size: 12px;
+    	font-weight: 600;
+    	color: rgba(255, 255, 255, 0.6); /* muted */
+    	margin-bottom: 4px;
+    }
+
+    .break-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      font-style: italic;
+      letter-spacing: 1px;
+      padding: 2px 0;
+    }
+
+
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:18px 0}
+    .card{background:var(--card);border-radius:14px;padding:18px;position:relative;overflow:visible;box-shadow:var(--glass-shadow);border:1px solid rgba(255,255,255,0.4);backdrop-filter: blur(8px) saturate(120%);-webkit-backdrop-filter: blur(8px) saturate(120%);transform-origin:center;}
+    .card .label{font-size:13px;color:var(--muted)}
+    .card .value{font-size:28px;font-weight:700;margin-top:6px}
+
+
+
+    .bar-container{height:10px;width:100%;background:rgba(230, 245, 255, 1);border-radius:6px;margin-top:10px;overflow:hidden}
+    .bar-fill{height:100%;transition:width 0.5s ease}
+    .present-fill{background:#4cc9f0}
+    .absent-fill{background:#ff7db3}
+
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:12px}
+    button{background: #008080;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background 0.2s}
+    button:hover{background: #006060}
+    button.danger{background:#d9534f}
+    button.danger:hover{background:#c9302c}
+    button.secondary{background:#85a5c1}
+    button.secondary:hover{background:#6390b3}
+
+    .main-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:stretch}
+    .tile{background:var(--card);border-radius:12px;padding:14px;backdrop-filter:blur(8px)}
+
+    .timetable {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* two equal columns */
+      gap: 12px 05px;                /* row gap / column gap */
+    }
+
+    .period {
+    	display: flex;
+    	flex-direction: column;
+	    margin: 6px;
+    	padding: 10px;
+      position: relative;
+      overflow: hidden;
+    	border-radius: 10px;
+    	border: 1px solid rgba(255,255,255,0.08);
+    	background: rgba(255,255,255,0.08); /* slight glass for sub-box */
+    	color: rgba(255,255,255,0.85);      /* 10% lighter text */
+    }
+
+    .active-period {
+      position: relative;
+      box-shadow: 0 0 25px var(--active-glow);
+      border: 1px solid var(--active-glow);
+      transition: box-shadow 1s ease, border-color 1s ease;
+    }
+
+    .progress-bar {
+      background: linear-gradient(to right, rgba(255,255,255,0.1), var(--progress-color));
+      box-shadow: 0 0 15px var(--progress-color);
+    }
+
+
+    .active-period.fading {
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+
+    .break-glow {
+        border: 2px solid #ff4b4b;
+        box-shadow: 0 0 15px #ff4b4b;
+        background: rgba(255, 75, 75, 0.12);
+        transition: all 0.3s ease;
+    }
+
+
+    .period-sub{font-size:13px;color:var(--muted);margin-top:4px}
+
+    .quote{font-style:italic;margin:6px 0;font-size:15px;text-align:center}
+
+    .birthday-list{margin-top:4px}
+    .birthday-item{display:flex;justify-content:space-between;padding:4px 0;border-radius:6px;font-size:14px}
+
+    textarea{width:100%;min-height:290px;max-width:100%;box-sizing:border-box;border-radius:8px;padding:8px;border:1px dashed rgba(15,23,42,0.06);resize:vertical;font-family:inherit;font-size:14px}
+
+    input,select{padding:8px;border-radius:8px;border:1px solid rgba(15,23,42,0.1);}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+
+    .tile h3 {
+      margin: 0 0 1px 0;
+      font-size: 16px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+    }
+    .right-column .tile {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #clockTile {
+      flex: 8;
+    }
+
+
+
+    #birthdayPopup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: #fff;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        text-align: center;
+        z-index: 1000;
+        display: none; /* hidden by default */
+    }
+
+    #birthdayPopup button {
+        margin-top: 15px;
+        background: #4cc9f0;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    #bg-fade {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      transition: opacity 4s ease-in-out;
+      z-index: -1;
+    }
+
+    #presentBar,
+    #absentBar,
+    #secondHand {
+      transition: background 2s ease-in-out;
+    }
+
+
+    #clockTile {
+        height: 310px;      /* choose what you want */
+        min-height: 310px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--card-sub);
+        border-radius: 14px;
+        padding: 14px;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--glass-shadow);
+    }
+
+    #clockTile h3 {
+        margin: 0 0 10px 0;
+        color: #4cc9f0;
+        font-size: 16px;
+    }
+
+    .clock {
+        position: relative;
+        width: 310px;
+        aspect-ratio: 1 / 1;
+        height: 310px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        box-shadow: 0 0 20px rgba(76,201,240,0.2);
+    }
+
+    .hand {
+        position: absolute;
+        bottom: 50%;
+        left: 50%;
+        transform-origin: bottom center;
+        transform: translateX(-50%) rotate(0deg);
+        background: #4caef0;
+        border-radius: 2px;
+        transition: all 0.05s ease-in-out;
+    }
+
+    .hour {
+        width: 6px;
+        height: 80px;
+    }
+
+    .minute {
+        width: 4px;
+        height: 120px;
+        background: #8deeff;
+    }
+
+    .second {
+        width: 2px;
+        height: 125px;
+        background: #ff7db3;
+    }
+
+    .center-dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: #fff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .tick {
+      position: absolute;
+      top: 0;
+      left: 49.4%;
+      width: 5px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      transform-origin: center 155px;
+    }
+
+    .tick.hour {
+      width: 5px;               /* thicker line (was 2px) */
+      height: 25px;
+      background: #4cc9f0;
+      box-shadow: 0 0 8px #4cc9f0;
+      border-radius: 2px;        /* smoother edges */
+    }
+
+
+    .tick.minute {
+      width: 1.5px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+
+
+    #digitalClockTile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-sub);
+      border-radius: 14px;
+      padding: 14px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--glass-shadow);
+    }
+
+    #digitalClockTile h3 {
+      margin: 0 0 10px 0;
+      color: #4cc9f0;
+      font-size: 16px;
+    }
+
+    #digitalClock {
+      font-size: 32px;
+      font-family: "Chakra Petch", sans-serif;
+      letter-spacing: 3px;
+      color: #ffffff;
+      text-shadow: 0 0 10px #4cc9f0, 0 0 20px #4cc9f0, 0 0 30px #4cc9f0;
+    }
+
+
+    /* Clock tile viewport */
+    #clockTile {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Toggle button */
+    #calendarToggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.35);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    /* Layers */
+    .clock-layer,
+    .calendar-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .clock-layer.active,
+    .calendar-layer.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Calendar */
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 8px 20px;
+      font-weight: 600;
+    }
+
+    .calendar-header button,
+    .calendar-footer button {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: white;
+      cursor: pointer;
+      margin: 0 8px; /* ⬅ pushes arrows away from edges */
+    }
+
+    #monthSelector {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    #monthSelector select {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #monthSelector select option {
+      color: black; /* dropdown list readability */
+    }
+
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .calendar-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    .calendar-grid > div {
+      min-height: 32px;
+    }
+
+    .calendar-day {
+      width: 100%;
+      text-align: center;
+      padding: 6px 0;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      box-sizing: border-box;
+    }
+
+
+   .calendar-day.today {
+      background: var(--active-glow);
+      border-radius: 8px;
+      font-weight: 700;
+      color: #000000;
+    }
+
+
+    .calendar-footer {
+      margin-top: auto;
+      padding-bottom: 8px;
+    }
+
+
+    /* Time-left label inside active period */
+    .period-timer {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      font-size: 14px;          /* ⬆ increased from 12px */
+      font-weight: 600;         /* slightly stronger */
+      color: rgba(255, 255, 255, 0.75);
+      background: rgba(0, 0, 0, 0.10);
+      padding: 6px 12px;        /* ⬆ more breathing space */
+      border-radius: 16px;      /* smoother, larger pill */
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      z-index: 2;
+      white-space: nowrap;
+    }
+
+    .tile-title {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 14px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      background: rgba(255,255,255,0.14);
+      border-radius: 7px;
+      backdrop-filter: blur(6px);
+    }
+
+    .dashboard-title-box {
+      display: inline-block;
+      padding: 8px 18px;
+      font-size: 30px;
+      font-weight: 600;
+      color: white;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      backdrop-filter: blur(8px);
+      margin-bottom: 14px;
+    }
+
+    /* Glass dropdowns */
+    .glass-select{background:var(--card);border-radius:14px;padding:15px;position:relative;overflow:visible;box-shadow:var(--glass-shadow);border:1px solid rgba(255,255,255,0.4);backdrop-filter: blur(8px) saturate(120%);-webkit-backdrop-filter: blur(8px) saturate(120%);transform-origin:center;}
+
+    .glass-select option {
+      background: rgba(144, 141, 141, 0.629);
+      color: white;
+    }
+
+    .glass-select:hover,
+    .glass-select:focus {
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .calendar-day {
+      opacity: 1 !important;
+    }
+
+    /* Weekend styling */
+    .calendar-day.sunday {
+      color: #ac1313;       /* strong red */
+      font-weight: 600;
+    }
+
+    .calendar-day.saturday {
+      color: #e56666;       /* lighter red */
+    }
+
+
+    .popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .popup.hidden { display: none; }
+
+
+
+    .popup-content {background:var(--card);color:#ddd8d880;width: min(90vw, 420px);border-radius:14px;padding:15px;position:relative;overflow:visible;box-shadow:var(--glass-shadow);border:1px solid rgba(255,255,255,0.4);backdrop-filter: blur(8px) saturate(120%);-webkit-backdrop-filter: blur(8px) saturate(120%);transform-origin:center;}
+
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      margin-top: 10px;
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    /* event mark */
+    .day.has-event::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      background: orange;
+      border-radius: 50%;
+    }
+
+
+
+    .period,
+    .progress-bar,
+    #digitalClock {
+      transition: all 1.5s ease-in-out !important;
+    }
+
+
+    @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.main-grid{grid-template-columns:1fr}}
+    @media (max-width:520px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="bg-fade"></div>
+
+  <div class="wrap">
+    <header>
+      <h1></h1>
+      <div class="dashboard-title-box">
+        <b>Class Dashboard of 11 C</b>
+      </div>
+
+      <div class="controls">
+        <button onclick="openCountsModal()">Edit counts</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card float">
+        <div class="label">Today</div>
+        <div class="value" id="dateVal">--</div>
+      </div>
+      <div class="card float">
+  	<div class="label">Total students</div>
+  	<div class="value" id="totalVal">--</div>
+  	<div class="bar-container">
+    	  <div class="bar-fill" style="background:#0077b6;width:100%"></div>
+  	</div>
+      </div>
+      <div class="card float">
+        <div class="label">Students Present</div>
+        <div class="value" id="presentVal">--</div>
+        <div class="bar-container"><div class="bar-fill present-fill" id="presentBar"></div></div>
+      </div>
+      <div class="card float">
+        <div class="label">Students Absent</div>
+        <div class="value" id="absentVal">--</div>
+        <div class="bar-container"><div class="bar-fill absent-fill" id="absentBar"></div></div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div>
+        <div class="tile">
+          <div class="tile-title">Daily Timetable</div>
+          <div class="timetable" id="timetable"></div>
+        </div>
+      </div>
+      <div class="right-column">
+        
+        <div class="tile" id="clockTile">
+
+          <!-- Toggle Button -->
+          <button id="calendarToggle" title="Toggle calendar"></button>
+
+          <!-- CLOCK LAYER -->
+          <div class="clock-layer active" id="clockLayer">
+            <div class="clock" id="clockFace">
+              <div class="hand hour" id="hourHand"></div>
+              <div class="hand minute" id="minuteHand"></div>
+              <div class="hand second" id="secondHand"></div>
+              <div class="center-dot"></div>
+            </div>
+          </div>
+
+          <!-- CALENDAR LAYER -->
+          <div class="calendar-layer" id="calendarLayer">
+            <div class="calendar-header">
+              <button id="prevMonth">◀</button>
+              <div id="monthSelector">
+                <select id="monthSelect" class="glass-select"></select>
+                <select id="yearSelect" class="glass-select"></select>
+              </div>
+              <button id="nextMonth">▶</button>
+            </div>
+
+            <div class="calendar-days">
+              <div>Sun</div><div>Mon</div><div>Tue</div>
+              <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div class="calendar-footer">
+              <button id="todayBtn">Today</button>
+            </div>
+          </div>
+
+        </div>
+
+
+        <div class="tile" id="digitalClockTile">
+          <div id="digitalClock"></div>
+        </div>
+
+
+        <div class="tile">
+          <h3>Today's Birthdays</h3>
+          <div class="birthday-list" id="birthdayList"></div>
+        </div>
+        <div class="tile">
+          <h3>Daily Quote</h3>
+          <div class="quote" id="dailyQuote">"..."</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>Made by and for XI C</div>
+    </footer>
+  </div>
+
+  <div id="birthdayPopup">
+      <div id="birthdayPopupText"></div>
+      <button onclick="dismissBirthdayPopup()">Dismiss</button>
+  </div>
+
+  <div id="eventPopup" class="popup hidden">
+    <div class="popup-content">
+      <h3 id="popupDate"></h3>
+
+      <div class="timetable">
+        <strong>Day Summary</strong>
+        <div id="daySummary"></div>
+      </div>
+
+      <textarea id="dayNotes" placeholder="Add notes / events..."></textarea>
+
+      <div class="popup-actions">
+        <button onclick="saveEvent()">Save</button>
+        <button onclick="closePopup()">Close</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    const NAMESPACE='classdash_v5';
+    const defaults={
+      total:52,present:52,notes:'',currentThemeIndex:0,
+
+      quotes:[
+  	"Do small things with great love.",
+  	"Consistency is more important than perfection.",
+  	"Believe you can and you're halfway there.",
+  	"The future depends on what you do today.",
+  	"Don’t let what you cannot do interfere with what you can do.",
+  	"Great things never come from comfort zones.",
+  	"Push yourself, because no one else is going to do it for you.",
+  	"Dream it. Wish it. Do it.",
+  	"Success doesn’t just find you. You have to go out and get it.",
+  	"The harder you work for something, the greater you’ll feel .",
+  	"Dream bigger. Do bigger.",
+  	"Don’t stop when you’re tired. Stop when you’re done.",
+  	"Wake up with determination. Go to bed with satisfaction.",
+  	"Little things make big days.",
+  	"It’s going to be hard, but hard does not mean impossible.",
+  	"Don’t wait for opportunity. Create it.",
+  	"Sometimes we’re tested not to show our weaknesses, but to discover our strengths.",
+  	"The key to success is to focus on goals, not obstacles.",
+  	"Dreams don’t work unless you do.",
+  	"Doubt kills more dreams than failure ever will.",
+  	"Do what you can with all you have, wherever you are.",
+  	"Act as if what you do makes a difference. It does.",
+  	"Success is not how high you have climbed, but how you make a positive difference to the world.",
+  	"Happiness is not something ready made. It comes from your own actions.",
+  	"Opportunities don’t happen, you create them.",
+  	"Don’t be afraid to give up the good to go for the great.",
+  	"I find that the harder I work, the more luck I seem to have.",
+  	"Try not to become a man of success, but rather try to become a man of value.",
+  	"Don’t watch the clock; do what it does. Keep going.",
+  	"A champion is defined not by their wins but by how they can recover when they fall.",
+  	"Difficulties in life don’t come to destroy you, but to help you realize your hidden potential.",
+  	"The secret of getting ahead is getting started.",
+  	"Don’t limit your challenges. Challenge your limits.",
+  	"Failure is the condiment that gives success its flavor.",
+  	"If you want something you’ve never had, you must be willing to do something you’ve never done.",
+  	"Hard work beats talent when talent doesn’t work hard.",
+  	"Do not wait to strike till the iron is hot; but make it hot by striking.",
+  	"Work hard in silence, let your success be your noise.",
+  	"If people are doubting how far you can go, go so far that you can’t hear them anymore.",
+  	"Keep going. Everything you need will come to you at the perfect time.",
+  	"Don’t be pushed around by the fears in your mind. Be led by the dreams in your heart.",
+  	"Discipline is the bridge between goals and accomplishment.",
+  	"Success is not in what you have, but who you are.",
+  	"If you get tired, learn to rest, not quit.",
+  	"Do it with passion or not at all.",
+  	"Small progress is still progress.",
+  	"A little progress each day adds up to big results.",
+  	"Difficult roads often lead to beautiful destinations.",
+  	"The best view comes after the hardest climb.",
+  	"Don’t tell people your plans. Show them your results.",
+  	"Success is the sum of small efforts, repeated day in and day out.",
+  	"Focus on being productive instead of busy."
+      ],
+
+
+      timetables:{
+    0:[ // Sunday (test timetable)
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"},
+        {subject:"None", teacher:"-"}
+    ],
+
+  	1:[ // Monday
+    	  {subject:"Chemistry", teacher:"Vimal sir"},
+    	  {subject:"Maths", teacher:"Renya tr."},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Chemistry", teacher:"Ashly tr."},
+    	  {subject:"Physics", teacher:"Deepesh sir"},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"P.T.", teacher:"Shalbin sir"},
+    	  {subject:"Maths", teacher:"Bijeesh sir"}
+        ],
+  	2:[ // Tuesday
+    	  {subject:"Chemistry", teacher:"Vimal sir"},
+    	  {subject:"Maths", teacher:"Renya tr."},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Physics", teacher:"Shyni tr."},
+    	  {subject:"Library", teacher:"Adith sir"},
+    	  {subject:"Chemistry", teacher:"Ashly tr."},
+    	  {subject:"Physics", teacher:"Deepesh sir"},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."}
+  	],
+  	3:[ // Wednesday
+    	  {subject:"Chemistry", teacher:"Vimal sir"},
+    	  {subject:"Physics", teacher:"Shyni tr."},
+    	  {subject:"Maths", teacher:"Bijeesh sir"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Maths", teacher:"Renya tr."},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Physics", teacher:"Deepesh sir"},
+    	  {subject:"M.P.T.", teacher:"-"}
+  	],
+  	4:[ // Thursday
+    	  {subject:"Physics", teacher:"Deepesh sir"},
+    	  {subject:"Maths", teacher:"Renya tr."},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Physics", teacher:"Shyni tr."},
+    	  {subject:"Maths", teacher:"Bijeesh sir"},
+    	  {subject:"Chemistry", teacher:"Ashly tr."},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"P.T.", teacher:"Lal sir"},
+    	  {subject:"Library", teacher:"Navya tr."}
+  	],
+  	5:[ // Friday
+    	  {subject:"Chemistry", teacher:"Vimal sir"},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"Maths", teacher:"Renya tr."},
+    	  {subject:"Physics", teacher:"Shyni tr."},
+    	  {subject:"English", teacher:"Jose sir"},
+        {subject:"Computer Science", teacher:"Sarala tr."},
+        {subject:"Chemistry", teacher:"Ashly tr."},
+    	  {subject:"Optional subject", teacher:"-"},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."}
+  	],
+  	6:[ // Saturday
+        {subject:"Chemistry", teacher:"Vimal sir"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Maths", teacher:"Bijeesh sir"},
+    	  {subject:"Chemistry", teacher:"Ashly tr."},
+   	    {subject:"Optional subject", teacher:"-"},
+    	  {subject:"English", teacher:"Jose sir"},
+    	  {subject:"Physics", teacher:"Shyni tr."},
+        {subject:"Physics", teacher:"Deepesh sir"},
+    	  {subject:"Computer Science", teacher:"Sarala tr."},
+    	  {subject:"Maths", teacher:"Renya tr."}
+  	]
+      },
+      birthdays:[
+        {name:"Alphiya Xavier",date:"2009-10-15"},
+        {name:"Amrutha Vinod",date:"2009-10-02"},
+        {name:"Anitta Aneesh",date:"2009-10-09"},
+        {name:"Anjitha Dinesh",date:"2009-02-09"},
+        {name:"Anugraha M.V.",date:"2009-07-05"},
+        {name:"Anvitha Jisha Rajeev",date:"2009-04-20"},
+        {name:"Ayisha Ziya U. P.",date:"2009-06-10"},
+        {name:"Daina Dawn",date:"2009-07-25"},
+        {name:"Fathimathul Hiba",date:"2009-04-10"},
+        {name:"Fathimath Thaniya Abdulla",date:"2009-06-05"},
+        {name:"Jhanvi Jayakumar",date:"2009-09-28"},
+        {name:"Malavika Pradeepkumar",date:"2009-07-06"},
+        {name:"Parvana S. Nambiar",date:"2009-07-06"},
+        {name:"Prathyusha Raviprakash",date:"2009-12-05"},
+        {name:"Rinza Fathima",date:"2009-10-28"},
+        {name:"Sara Elizabeth Saji",date:"2009-12-28"},
+        {name:"Taniya Manattu Mathew",date:"2009-01-17"},
+        {name:"Aaron John",date:"2009-01-07"},
+        {name:"Aaron Shibu",date:"2009-06-24"},
+        {name:"Abhinav Vijesh",date:"2009-05-05"},
+        {name:"Abiram Sajeendran",date:"2009-02-24"},
+        {name:"Adwait N",date:"2009-02-23"},
+        {name:"Akash Padmanabhan",date:"2009-05-18"},
+        {name:"Alen Sunny",date:"2009-10-06"},
+        {name:"Aljoe Diaz Vincent",date:"2009-05-19"},
+        {name:"Amay Vinod",date:"2009-11-12"},
+        {name:"Anay Ranjan",date:"2009-02-02"},
+        {name:"Anirudh Anil",date:"2009-07-28"},
+        {name:"Ankit Kumar Yogi",date:"2009-07-21"},
+        {name:"Anugrah P.R.",date:"2009-10-03"},
+        {name:"Delvin George",date:"2009-10-20"},
+        {name:"Derin Joseph",date:"2009-07-27"},
+        {name:"Edwin John Sebastian",date:"2009-05-21"},
+        {name:"Godwin Jinto",date:"2009-09-25"},
+        {name:"Hassan Raihan",date:"2009-05-02"},
+        {name:"Irwin Stanley",date:"2009-05-23"},
+        {name:"Jesbin Tom Jhoney",date:"2009-02-25"},
+        {name:"Karthik Prajith",date:"2009-03-19"},
+        {name:"Kevin George Pious",date:"2009-10-16"},
+        {name:"Manasyu Legi",date:"2009-02-25"},
+        {name:"Martin Roy",date:"2009-01-01"},
+        {name:"Muhammad Thayyib",date:"2009-02-13"},
+        {name:"Nandathmaj A.V.",date:"2009-08-10"},
+        {name:"Navjyodh Dineshan",date:"2009-09-21"},
+        {name:"Noel Joseph",date:"2009-11-04"},
+        {name:"Rohith Jilesh",date:"2009-03-09"},
+        {name:"Roshith P.P.",date:"2009-07-17"},
+        {name:"Sivnandh Umesh",date:"2009-10-27"},
+        {name:"Siyon Raphel",date:"2009-02-05"},
+        {name:"Sreedev K",date:"2009-06-14"},
+        {name:"Stalvin George",date:"2009-04-13"},
+        {name:"Aadi Siva P. P.",date:"2009-09-03"},
+        {name:"🎉🎉 Vimal sir 🎉🎉",date:"2009-02-27"}
+      ]
+    };
+
+
+
+
+    function loadData(){
+      const raw=localStorage.getItem(NAMESPACE);
+      if(!raw){
+        localStorage.setItem(NAMESPACE,JSON.stringify(defaults));
+        return {...defaults};
+      }
+      return {...defaults,...JSON.parse(raw)};
+    }
+
+    function saveData(d){localStorage.setItem(NAMESPACE,JSON.stringify(d));}
+
+    function openCountsModal() {
+        const total = 52; // fixed total
+        const absentInput = prompt('Enter number of students absent:', data.total - data.present);
+
+        if (absentInput !== null) {
+            let absent = parseInt(absentInput) || 0;
+
+            // prevent negative numbers
+            if (absent < 0) {
+                alert("Number of absentees cannot be negative!");
+                absent = 0;
+            }
+
+            // prevent absentees more than total
+            if (absent > total) {
+                alert("Absentees cannot be more than total students!");
+                absent = 0;
+            }
+
+            // update present accordingly
+            data.total = total;
+            data.present = total - absent;
+
+            saveData(data);
+            renderCounts();
+        }
+    }
+
+
+    
+    let data=loadData();
+    let lastSavedNotes=data.notes;
+
+
+
+    function highlightCurrentPeriod() {
+      const periods = document.querySelectorAll(".period");
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+
+      const periodTimes = [
+        { start: "08:40", end: "09:40" },
+        { start: "09:40", end: "10:20" },
+        { start: "10:20", end: "11:00" },
+        { start: "11:10", end: "11:50" },
+        { start: "11:50", end: "12:30" },
+        { start: "13:00", end: "13:35" },
+        { start: "13:35", end: "14:10" },
+        { start: "14:20", end: "14:55" },
+        { start: "14:55", end: "15:20" },
+        { start: "15:25", end: "16:20" }
+      ];
+
+      const breaks = [
+        { start: "11:00", end: "11:10" },
+        { start: "12:30", end: "13:00" },
+        { start: "14:10", end: "14:20" },
+        { start: "16:20", end: "23:59" }
+      ];
+
+      function toMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+      }
+
+      // detect break
+      const isBreak = breaks.some(b => {
+        const s = toMinutes(b.start);
+        const e = toMinutes(b.end);
+        return currentTime >= s && currentTime < e;
+      });
+
+      // handle non-active states
+      periods.forEach(p => {
+        if (p.classList.contains("active-period") && !p.classList.contains("fading")) {
+          p.classList.add("fading");
+          p.style.transition = "box-shadow 1s ease, background 1s ease, border-color 1s ease";
+          setTimeout(() => {
+            p.classList.remove("active-period", "fading");
+            p.style.transition = "";
+          }, 1000);
+        }
+
+        if (p.querySelector(".progress-bar")) p.querySelector(".progress-bar").remove();
+        if (p.querySelector(".period-timer")) p.querySelector(".period-timer").remove();
+
+        p.classList.remove("break-glow");
+      });
+
+      if (isBreak) {
+        periods.forEach(p => p.classList.add("break-glow"));
+        return;
+      }
+
+      // find the current active period
+      periodTimes.forEach((p, i) => {
+        const start = toMinutes(p.start);
+        const end = toMinutes(p.end);
+
+        if (currentTime >= start && currentTime < end) {
+          const active = periods[i];
+          if (!active) return;
+          active.classList.add("active-period");
+
+          // --- Time left label ---
+          let timer = active.querySelector(".period-timer");
+          if (!timer) {
+            timer = document.createElement("div");
+            timer.className = "period-timer";
+            active.appendChild(timer);
+          }
+
+
+          // create overlay for blue fill
+          const bar = document.createElement("div");
+          bar.className = "progress-bar";
+          bar.style.position = "absolute";
+          bar.style.top = "0";
+          bar.style.left = "0"; // fill from left → right
+          bar.style.height = "100%";
+          const theme = themes[currentTheme];
+          bar.style.background = `linear-gradient(to right, rgba(255,255,255,0.1), ${theme.progressColor})`;
+          bar.style.boxShadow = `0 0 15px ${theme.progressColor}`;
+          bar.style.transition = "width 0.5s linear, background 1.5s ease-in-out, box-shadow 1.5s ease-in-out";
+          bar.style.borderRadius = "10px";
+          bar.style.zIndex = "0";
+          bar.style.width = "0%";
+          bar.style.transition = "width 0.5s linear";
+          active.appendChild(bar);
+
+          // animate continuously
+          // Smoothly update progress continuously with 5s resync
+          let lastSync = Date.now();
+
+          function animateProgress() {
+            const now = new Date();
+            const preciseTime =
+              now.getHours() * 60 +
+              now.getMinutes() +
+              now.getSeconds() / 60 +
+              now.getMilliseconds() / 60000;
+
+            const elapsed = preciseTime - start;
+            const duration = end - start;
+            const remaining = Math.max(end - preciseTime, 0);
+            const remMin = Math.floor(remaining);
+            const remSec = Math.floor((remaining - remMin) * 60);
+
+            timer.textContent = `${remMin}:${remSec.toString().padStart(2, "0")}`;
+
+            const progressPercent = Math.min(Math.max(elapsed / duration, 0), 1);
+            const fillPercent = progressPercent * 100;
+
+            // Move bar and edge smoothly
+            bar.style.width = fillPercent + "%";
+            edge.style.left = `calc(${fillPercent}% - 2px)`;
+
+            // --- 🕐 Every 5 seconds, resync precisely ---
+            const nowMs = Date.now();
+            if (nowMs - lastSync >= 5000) {
+              lastSync = nowMs;
+              // Force exact time sync
+              bar.style.transition = "none"; // prevent visual snap
+              bar.offsetHeight; // reflow
+              bar.style.width = fillPercent + "%";
+              bar.style.transition = "";
+            }
+
+            if (preciseTime < end) {
+              requestAnimationFrame(animateProgress);
+            } else {
+              // End of period — fade out
+              active.style.transition = "box-shadow 1s ease, background 1s ease, border-color 1s ease";
+              active.classList.add("fading");
+              setTimeout(() => {
+                active.classList.remove("active-period", "fading");
+              }, 1000);
+            }
+          }
+
+          requestAnimationFrame(animateProgress);
+        }
+      });
+    }
+
+    // Run smoothly & re-evaluate every 1 Second
+    highlightCurrentPeriod();
+    setInterval(highlightCurrentPeriod, 1000);
+
+
+
+    function formatDate(date){
+      let dd=String(date.getDate()).padStart(2,'0');
+      let mm=String(date.getMonth()+1).padStart(2,'0');
+      let yyyy=date.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
+
+    function formatDay(date){
+      const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      return days[date.getDay()];
+    }
+
+
+    function renderCounts(){
+      document.getElementById('totalVal').textContent=data.total;
+      document.getElementById('presentVal').textContent=data.present;
+      document.getElementById('absentVal').textContent=data.total-data.present;
+      document.getElementById('dateVal').textContent =  formatDate(new Date()) + ", " + formatDay(new Date()) + ".";
+      const presentPerc=(data.present/data.total*100).toFixed(0);
+      const absentPerc=((data.total-data.present)/data.total*100).toFixed(0);
+      document.getElementById('presentBar').style.width=presentPerc+'%';
+      document.getElementById('absentBar').style.width=absentPerc+'%';
+    }
+
+    function getDailyQuote() {
+    	const today = new Date();
+    	const dayOfYear = Math.floor(
+        	(today - new Date(today.getFullYear(), 0, 0)) / 86400000
+    	);
+    	return data.quotes[dayOfYear % data.quotes.length];
+    }
+
+    // render the daily quote
+    document.getElementById("dailyQuote").textContent = getDailyQuote();
+
+    function renderBirthdays(){
+      const today=new Date().toISOString().slice(5,10);
+      const list=document.getElementById('birthdayList');
+      list.innerHTML='';
+      const todaysBirthdays=data.birthdays.filter(b=>b.date.slice(5,10)===today);
+      if(todaysBirthdays.length===0){
+        list.innerHTML='<div style="color:var(--muted)">No birthdays today</div>';
+      }
+      todaysBirthdays.forEach(b=>{
+        const div=document.createElement('div');
+        div.className='birthday-item';
+        div.textContent=`${b.name}`;
+        list.appendChild(div);
+      });
+    }
+
+    function renderNotes(){
+      document.getElementById('notesArea').value=data.notes;
+    }
+
+
+    function renderTimetable() {
+      const wrap = document.getElementById('timetable');
+      wrap.innerHTML = '';
+
+      const day = new Date().getDay();
+      const timetable = data.timetables[day];
+
+      if (!timetable) {
+          wrap.innerHTML = '<div style="color:var(--muted)">No timetable for today</div>';
+          return;
+      }
+
+      // Break markers
+      const breaks = {
+          2: "<<<------- Break ------->>>",
+          4: "<<<------- Lunch Break ------->>>",
+          6: "<<<------- Break ------->>>",
+          8: "<<<------- National Anthem ------->>>"
+      };
+
+      // Left column: p0–p4
+      const leftCol = document.createElement("div");
+      leftCol.className = "column";
+      timetable.forEach((p, i) => {
+          if (i <= 4) {
+              const div = document.createElement("div");
+              div.className = "period";
+              div.innerHTML = `
+                  <div class="period-num">Period ${i}</div>
+                  <div class="period-subject">${p.subject}</div>
+                  <div class="period-sub">${p.teacher}</div>
+              `;
+              leftCol.appendChild(div);
+
+              if (breaks[i]) {
+                  const br = document.createElement("div");
+                  br.className = "break-row";
+                  br.textContent = breaks[i];
+                  leftCol.appendChild(br);
+              }
+          }
+      });
+
+      // Right column: p5–p9
+      const rightCol = document.createElement("div");
+      rightCol.className = "column";
+      timetable.forEach((p, i) => {
+          if (i >= 5) {
+              const div = document.createElement("div");
+              div.className = "period";
+              div.innerHTML = `
+                  <div class="period-num">Period ${i}</div>
+                  <div class="period-subject">${p.subject}</div>
+                  <div class="period-sub">${p.teacher}</div>
+              `;
+              rightCol.appendChild(div);
+
+              if (breaks[i]) {
+                  const br = document.createElement("div");
+                  br.className = "break-row";
+                  br.textContent = breaks[i];
+                  rightCol.appendChild(br);
+              }
+          }
+      });
+
+      // Append columns into timetable wrapper
+      wrap.appendChild(leftCol);
+      wrap.appendChild(rightCol);
+    }
+
+    let lastSec = 0;
+    let totalRotations = 0;
+
+    function updateClock() {
+      const now = new Date();
+
+      // Get real system time (no accumulation)
+      const hours = now.getHours() % 12;
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const milliseconds = now.getMilliseconds();
+
+      // Continuous, accurate rotation:
+      // - Hour hand moves smoothly as minutes pass
+      // - Minute hand moves smoothly as seconds pass
+      // - Second hand moves smoothly as milliseconds pass
+      const hourDeg = (hours + minutes / 60) * 30;     // 360° / 12h
+      const minuteDeg = (minutes + seconds / 60) * 6;  // 360° / 60m
+      const secondDeg = (seconds + milliseconds / 1000) * 6;
+
+      // Apply transforms
+      document.getElementById("hourHand").style.transform =
+        `translateX(-50%) rotate(${hourDeg}deg)`;
+      document.getElementById("minuteHand").style.transform =
+        `translateX(-50%) rotate(${minuteDeg}deg)`;
+      document.getElementById("secondHand").style.transform =
+        `translateX(-50%) rotate(${secondDeg}deg)`;
+    }
+
+
+    function runClockSmoothly() {
+      updateClock();
+      requestAnimationFrame(runClockSmoothly);
+    }
+    runClockSmoothly();
+
+
+    function createClockTicks() {
+      const clock = document.getElementById("clockFace");
+      if (!clock) return;
+
+      for (let i = 0; i < 60; i++) {
+        const tick = document.createElement("div");
+        tick.classList.add("tick");
+        if (i % 5 === 0) tick.classList.add("hour"); // every 5th tick is an hour mark
+        else tick.classList.add("minute");
+
+        tick.style.transform = `rotate(${i * 6}deg) translateX(-50%)`;
+        clock.appendChild(tick);
+      }
+    }
+
+    createClockTicks();
+
+
+    function updateDigitalClock() {
+      const now = new Date();
+      let hrs = now.getHours();
+      let mins = now.getMinutes();
+      let secs = now.getSeconds();
+      const ampm = hrs >= 12 ? 'PM' : 'AM';
+      hrs = hrs % 12 || 12; // convert 0 to 12-hour format
+
+      // Pad single digits
+      hrs = hrs < 10 ? '0' + hrs : hrs;
+      mins = mins < 10 ? '0' + mins : mins;
+      secs = secs < 10 ? '0' + secs : secs;
+
+      const timeString = `${hrs}:${mins}:${secs} ${ampm}`;
+      const clockDiv = document.getElementById("digitalClock");
+      if (clockDiv) clockDiv.textContent = timeString;
+    }
+
+    setInterval(updateDigitalClock, 1000);
+    updateDigitalClock();
+
+    const themes = [
+
+      
+      {
+        name: "Green Mounts",
+        background: "bg1.png",
+        secondColor: "#4B9E32",
+        hourColor: "#1390B7",
+        minuteColor: "#4AB2D3",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#4B9E32",
+        absentColor: "#ff4b4b",
+        totalColor: "#1390B7",
+        glowColor: "#4B9E32",        // digital clock glow
+        activeGlow: "#4B9E32",       // active period border/glow
+        progressColor: "#4B9E32",    // timetable progress bar
+        overlayOpacity: 0.2
+      },
+      {
+        name: "autumn forest",
+        background: "bg2.png",
+        secondColor: "#DF7337",
+        hourColor: "#2481D3",
+        minuteColor: "#58A4E7",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#DF7337",
+        absentColor: "#B9000B",
+        totalColor: "#2481D3",
+        glowColor: "#DF7337",
+        activeGlow: "#DF7337",
+        progressColor: "#DF7337",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Artic forest",
+        background: "bg3.png",
+        secondColor: "#50fabc",
+        hourColor: "#0B3B8D",
+        minuteColor: "#2F61BA",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#50fabc",
+        absentColor: "#960339",
+        totalColor: "#0B3B8D",
+        glowColor: "#50fabc",
+        activeGlow: "#50fabc",
+        progressColor: "#50fabc",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Aurora mounts",
+        background: "bg4.png",
+        secondColor: "#64f5d2",
+        hourColor: "#ff5ea2",
+        minuteColor: "#ff89c9",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#64f5d2",
+        absentColor: "#ff5d8f",
+        totalColor: "#551FDC",
+        glowColor: "#64f5d2",
+        activeGlow: "#CA6099",
+        progressColor: "#CA6099",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Cityscape",
+        background: "bg5.png",
+        secondColor: "#1680cc",
+        hourColor: "#1161DE",
+        minuteColor: "#47c5ff",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#47c5ff",
+        absentColor: "#f52c2c",
+        totalColor: "#3342B2",
+        glowColor: "#1161DE",
+        activeGlow: "#1161DE",
+        progressColor: "#1161DE",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Lakeside",
+        background: "bg6.png",
+        secondColor: "#c27d29",
+        hourColor: "#2836CE",
+        minuteColor: "#2D6CEA",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#c27d29",
+        absentColor: "#f73e34",
+        totalColor: "#2D6CEA",
+        glowColor: "#ffb84d",
+        activeGlow: "#ff8000",
+        progressColor: "#ff8000",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Funicular",
+        background: "bg7.png",
+        secondColor: "#BF5000",
+        hourColor: "#BB9442",
+        minuteColor: "#EABC5D",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#EABC5D",
+        absentColor: "#BF5000",
+        totalColor: "#523B2C",
+        glowColor: "#ffb84d",
+        activeGlow: "#DFAD46",
+        progressColor: "#DFAD46",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Golden Palace",
+        background: "bg8.png",
+        secondColor: "#B93808",
+        hourColor: "#5B2D00",
+        minuteColor: "#D07318",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#D07318",
+        absentColor: "#B93808",
+        totalColor: "#5B2D00",
+        glowColor: "#DC880B",
+        activeGlow: "#DC880B",
+        progressColor: "#DC880B",
+        overlayOpacity: 0.4
+      },
+      {
+        name: "Japanese Gates",
+        background: "bg9.png",
+        secondColor: "#F7E0BE",
+        hourColor: "#AA0023",
+        minuteColor: "#D71843",
+        tickColor: "rgba(255,255,255,0.8)",
+        presentColor: "#F7E0BE",
+        absentColor: "#AA0023",
+        totalColor: "#D71843",
+        glowColor: "#D20030",
+        activeGlow: "#D20030",
+        progressColor: "#D20030",
+        overlayOpacity: 0.4
+      },
+    ];
+
+    // Preload all backgrounds early for seamless fades
+    themes.forEach(t => {
+      const img = new Image();
+      img.src = t.background;
+    });
+
+
+    let currentTheme = 0;
+
+    function applyTheme() {
+      const theme = themes[currentTheme];
+      const bg = document.getElementById("bg-fade");
+
+      // Crossfade images
+      const nextImg = new Image();
+      nextImg.src = theme.background;
+
+      nextImg.onload = () => {
+        bg.style.transition = "opacity 5s ease-in-out";
+        bg.style.opacity = 0;
+
+        setTimeout(() => {
+          bg.style.backgroundImage = `
+            linear-gradient(rgba(5, 10, 25, ${theme.overlayOpacity}), rgba(5, 10, 25, ${theme.overlayOpacity})),
+            url('${theme.background}')
+          `;
+          bg.style.opacity = 100;
+        }, 400);
+      };
+
+      // Update element colors dynamically
+      const secondHand = document.getElementById("secondHand");
+      const presentBar = document.getElementById("presentBar");
+      const absentBar = document.getElementById("absentBar");
+      const totalBar = document.querySelector('.card:nth-child(2) .bar-fill');
+
+      if (secondHand) secondHand.style.background = theme.secondColor;
+      if (presentBar) presentBar.style.background = theme.presentColor;
+      if (absentBar) absentBar.style.background = theme.absentColor;
+      if (totalBar) totalBar.style.background = theme.totalColor;
+
+      // --- DIGITAL CLOCK GLOW ---
+      const digitalClock = document.getElementById("digitalClock");
+      if (digitalClock) {
+        digitalClock.style.transition = "text-shadow 1.5s ease-in-out, color 1.5s ease-in-out";
+        digitalClock.style.textShadow = `
+          0 0 10px ${theme.glowColor},
+          0 0 20px ${theme.glowColor},
+          0 0 30px ${theme.glowColor}
+        `;
+        digitalClock.style.color = "#ffffff";
+      }
+
+      // --- ACTIVE PERIOD GLOW ---
+      const style = document.documentElement.style;
+      style.setProperty("--active-glow", theme.activeGlow);
+      style.setProperty("--progress-color", theme.progressColor);
+
+
+      // --- CLOCK ELEMENTS ---
+      const hourHand = document.getElementById("hourHand");
+      const minuteHand = document.getElementById("minuteHand");
+      const ticks = document.querySelectorAll(".tick");
+
+      // Apply colors with smooth transition
+      [hourHand, minuteHand, secondHand].forEach(el => {
+        if (el) el.style.transition = "background 1s ease-in-out";
+      });
+
+      if (hourHand) hourHand.style.background = theme.hourColor;
+      if (minuteHand) minuteHand.style.background = theme.minuteColor;
+      if (secondHand) secondHand.style.background = theme.secondColor;
+
+      // Update all tick marks
+      ticks.forEach(tick => {
+        tick.style.transition = "background 1s ease-in-out, box-shadow 1s ease-in-out";
+        tick.style.background = theme.tickColor;
+
+        // make hour ticks glow slightly
+        if (tick.classList.contains("hour")) {
+          tick.style.boxShadow = `0 0 8px ${theme.secondColor}`;
+        } else {
+          tick.style.boxShadow = "none";
+        }
+      });
+
+    }
+
+
+    /* ---------------- TIME-BOUND THEMES ---------------- */
+
+    const themeSchedule = [
+      { start: "06:00", end: "08:20", theme: 0 },      
+      { start: "08:00", end: "09:00", theme: 1 },
+      { start: "09:00", end: "10:00", theme: 2 },
+      { start: "10:00", end: "11:00", theme: 3 },
+      { start: "11:00", end: "12:00", theme: 4 },
+      { start: "12:00", end: "13:00", theme: 5 },
+      { start: "13:00", end: "14:00", theme: 6 },
+      { start: "14:00", end: "15:00", theme: 7 },
+      { start: "15:00", end: "23:00", theme: 8 }
+    ];
+
+    function timeToMinutes(t) {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function applyTimeBasedTheme() {
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      for (const slot of themeSchedule) {
+        const start = timeToMinutes(slot.start);
+        const end = timeToMinutes(slot.end);
+
+        if (nowMin >= start && nowMin < end) {
+          if (currentTheme !== slot.theme) {
+            currentTheme = slot.theme;
+            applyTheme();
+          }
+          return;
+        }
+      }
+    }
+
+    // Run once + keep synced
+    applyTimeBasedTheme();
+    setInterval(applyTimeBasedTheme, 30000);
+
+
+
+
+    let pressTimer;
+    let lastTap = 0;
+    let activeDate = "";
+
+    function getEventKey(dateStr) {
+        return `events-${dateStr}`;
+      }
+
+    function attachDayHandlers(dayEl, dateStr) {
+
+      // long press (touch)
+      dayEl.addEventListener("touchstart", () => {
+        pressTimer = setTimeout(() => openPopup(dateStr), 500);
+      });
+
+      dayEl.addEventListener("touchend", () => {
+        clearTimeout(pressTimer);
+      });
+
+      // double click / tap
+      dayEl.addEventListener("click", () => {
+        const now = Date.now();
+        if (now - lastTap < 300) {
+          openPopup(dateStr);
+        }
+        lastTap = now;
+      });
+    }
+
+    function openPopup(dateStr) {
+      activeDate = dateStr;
+
+      document.getElementById("popupDate").innerText = dateStr;
+      document.getElementById("daySummary").innerText =
+        getTimetableSummary(dateStr);
+
+      const saved = localStorage.getItem(getEventKey(dateStr));
+      document.getElementById("dayNotes").value = saved || "";
+
+      document.getElementById("eventPopup").classList.remove("hidden");
+    }
+
+    function closePopup() {
+      document.getElementById("eventPopup").classList.add("hidden");
+    }
+
+
+    function saveEvent() {
+      const text = document.getElementById("dayNotes").value.trim();
+      const key = getEventKey(activeDate);
+
+      if (text) {
+        localStorage.setItem(key, text);
+        markDay(activeDate);
+      } else {
+        localStorage.removeItem(key);
+        unmarkDay(activeDate);
+      }
+
+      closePopup();
+    }
+
+    function markDay(dateStr) {
+      const el = document.querySelector(`[data-date="${dateStr}"]`);
+      if (el) el.classList.add("has-event");
+    }
+
+    function unmarkDay(dateStr) {
+      const el = document.querySelector(`[data-date="${dateStr}"]`);
+      if (el) el.classList.remove("has-event");
+    }
+
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith("events-")) {
+        markDay(k.replace("events-", ""));
+      }
+    });
+
+
+    function getTimetableSummary(dateStr) {
+      const day = new Date(dateStr).getDay();
+
+      const timetable = {
+        1: "Chem(V), Maths(R), C.S., Opt., Eng, Chem(A), Phy(D), Eng, P.T., Maths(B)",
+        2: "Chemistry • CS • Maths",
+        3: "Physics • English • Lab",
+        4: "Maths • Chemistry • CS",
+        5: "English • Physics • Maths",
+        6: "English • Physics • Maths"
+      };
+
+      return timetable[day] || "Holiday";
+    }
+
+
+
+
+    let showingCalendar = false;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+
+    const clockLayer = document.getElementById("clockLayer");
+    const calendarLayer = document.getElementById("calendarLayer");
+
+    document.getElementById("calendarToggle").onclick = () => {
+      showingCalendar = !showingCalendar;
+      clockLayer.classList.toggle("active", !showingCalendar);
+      calendarLayer.classList.toggle("active", showingCalendar);
+      if (showingCalendar) renderCalendar();
+    };
+
+   document.getElementById("prevMonth").onclick = () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar();
+    };
+
+    document.getElementById("nextMonth").onclick = () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    };
+
+
+    document.getElementById("todayBtn").onclick = () => {
+      const now = new Date();
+      currentMonth = now.getMonth();
+      currentYear = now.getFullYear();
+      renderCalendar();
+    };
+
+    
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+
+      // sync dropdowns safely
+      monthSelect.value = currentMonth;
+      yearSelect.value = currentYear;
+
+      const labelMonth = monthNames[currentMonth];
+      const labelYear = currentYear;
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        grid.appendChild(document.createElement("div"));
+      }
+
+      const today = new Date();
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day";
+        cell.textContent = d;
+
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+        cell.dataset.date = dateStr;
+        attachDayHandlers(cell, dateStr);
+
+
+        const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+        if (dayOfWeek === 0) cell.classList.add("sunday");
+        if (dayOfWeek === 6) cell.classList.add("saturday");
+
+        const today = new Date();
+        if (
+          d === today.getDate() &&
+          currentMonth === today.getMonth() &&
+          currentYear === today.getFullYear()
+        ) {
+          cell.classList.add("today");
+        }
+
+        grid.appendChild(cell);
+      }
+
+
+    }
+
+
+    
+    const monthNames = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+
+    const monthSelect = document.getElementById("monthSelect");
+    const yearSelect = document.getElementById("yearSelect");
+
+    // Months
+    monthNames.forEach((m, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = m;
+      monthSelect.appendChild(opt);
+    });
+
+    // Years (wide jump range)
+    for (let y = 1990; y <= 2100; y++) {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+
+
+    function syncSelector() {
+      monthSelect.value = currentMonth;
+      yearSelect.value = currentYear;
+    }
+
+    monthSelect.addEventListener("change", () => {
+      currentMonth = Number(monthSelect.value);
+      renderCalendar();
+    });
+
+    yearSelect.addEventListener("change", () => {
+      currentYear = Number(yearSelect.value);
+      renderCalendar();
+    });
+
+
+
+
+
+
+    function checkBirthdayPopup() {
+        const todayStr = new Date().toISOString().slice(5,10); // MM-DD
+        const todays = data.birthdays.filter(b => b.date.slice(5,10) === todayStr);
+
+        // Period 0 = 08:40–16:20
+        const now = new Date();
+        const minutesNow = now.getHours()*60 + now.getMinutes();
+        const startMin = 8*60 + 20;
+        const endMin = 16*60 + 20;
+
+        if (todays.length > 0 && minutesNow >= startMin && minutesNow < endMin) {
+            const names = todays.map(b => b.name).join(", ");
+            document.getElementById("birthdayPopupText").textContent =
+                `🎂 Today is ${names}'s Birthday! 🎉`;
+            document.getElementById("birthdayPopup").style.display = "block";
+        }
+    }
+
+    function dismissBirthdayPopup(){
+        document.getElementById("birthdayPopup").style.display = "none";
+    }
+
+	
+	if ("serviceWorker" in navigator) {
+	  navigator.serviceWorker.register("./sw.js");
+	}
+	
+
+	
+    renderCounts();
+    renderBirthdays();
+    renderTimetable();
+    getDailyQuote();
+    checkBirthdayPopup();
+  </script>
+</body>
+</html>
