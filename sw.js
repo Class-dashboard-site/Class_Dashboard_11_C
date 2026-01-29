@@ -1,4 +1,4 @@
-const CACHE_NAME = "class11c-offline-v4";
+const CACHE_NAME = "class11c-offline-v5";
 
 const ASSETS = [
   "./",
@@ -42,6 +42,7 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
 
 
 
