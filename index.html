@@ -61,9 +61,10 @@
 
 
     .period {
+		justify-content:center;
     	display: flex;
     	flex-direction: column;
-      min-height: 70px;
+      	min-height: 70px;
     	padding: 10px;
     	border-radius: 10px;
     	border: 1px solid rgba(0,0,0,0.04);
@@ -2087,7 +2088,7 @@
     }
 
     let popupIdleTimer = null;
-    const POPUP_IDLE_LIMIT = 10000; // 10 seconds
+    const POPUP_IDLE_LIMIT = 5000; // 5 seconds
 
     function startPopupIdleTimer() {
       clearPopupIdleTimer();
