@@ -4,7 +4,7 @@ const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./Ndot_font.woff2"
+  "./Ndot_font.woff2",
 
   // backgrounds
   "./bg1.png",
@@ -15,7 +15,7 @@ const ASSETS = [
   "./bg6.png",
   "./bg7.png",
   "./bg8.png",
-  "./bg9.png"
+  "./bg9.png",
 ];
 
 self.addEventListener("install", event => {
@@ -43,4 +43,5 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
 
